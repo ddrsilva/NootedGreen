@@ -8,19 +8,39 @@ workflows:
     scripts:
       - name: Show Xcode
         script: |
+          set -euxo pipefail
           xcodebuild -version
-      - name: Clone dependencies
+          sw_vers
+          uname -a
+      - name: Inspect project
         script: |
-          git clone https://github.com/acidanthera/Lilu.git ../Lilu
+          set -euxo pipefail
+          pwd
+          ls -la
+          xcodebuild -list -project NootedGreen.xcodeproj
+          test -d Lilu.kext/Contents/Resources/Headers
+          test -d MacKernelSDK/Headers
+          test -f MacKernelSDK/Library/x86_64/libkmod.a
       - name: Build
         script: |
+          set -euxo pipefail
+          rm -rf build
           xcodebuild \
             -project NootedGreen.xcodeproj \
+            -scheme NootedGreen \
             -configuration Release \
-            build
+            -derivedDataPath build/DerivedData \
+            ARCHS=x86_64 \
+            ONLY_ACTIVE_ARCH=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build | tee build/xcodebuild.log
       - name: Find kext
         script: |
-          find . -name "NootedGreen.kext" -print
+          set -euxo pipefail
+          find build -name "NootedGreen.kext" -print
+          find build -name "*.zip" -print
     artifacts:
-      - "**/NootedGreen.kext"
-      - "**/Build/**/*.kext"
+      - build/DerivedData/Build/Products/Release/NootedGreen.kext
+      - build/DerivedData/Build/Products/Release/*.zip
+      - build/xcodebuild.log
