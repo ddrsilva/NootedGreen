@@ -1,0 +1,26 @@
+workflows:
+  build-nootedgreen:
+    name: Build NootedGreen
+    instance_type: mac_mini_m2
+    max_build_duration: 30
+    environment:
+      xcode: latest
+    scripts:
+      - name: Show Xcode
+        script: |
+          xcodebuild -version
+      - name: Clone dependencies
+        script: |
+          git clone https://github.com/acidanthera/Lilu.git ../Lilu
+      - name: Build
+        script: |
+          xcodebuild \
+            -project NootedGreen.xcodeproj \
+            -configuration Release \
+            build
+      - name: Find kext
+        script: |
+          find . -name "NootedGreen.kext" -print
+    artifacts:
+      - "**/NootedGreen.kext"
+      - "**/Build/**/*.kext"
