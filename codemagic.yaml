@@ -25,6 +25,7 @@ workflows:
         script: |
           set -euxo pipefail
           rm -rf build
+          mkdir -p build
           xcodebuild \
             -project NootedGreen.xcodeproj \
             -scheme NootedGreen \
